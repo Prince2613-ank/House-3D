@@ -20,20 +20,170 @@
       font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     }
 
+    .map-panel {
+      position: fixed;
+      top: 58px;
+      right: 12px;
+      z-index: 11;
+      width: 330px;
+      max-width: calc(100vw - 24px);
+      padding: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      border-radius: 8px;
+      background: rgba(20, 24, 28, 0.92);
+      color: #f5f7fa;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
+      backdrop-filter: blur(10px);
+    }
+
+    .map-panel[hidden] {
+      display: none;
+    }
+
+    .map-panel h2,
+    .map-panel h3 {
+      margin: 0;
+      line-height: 1.15;
+    }
+
+    .map-panel h2 {
+      font-size: 20px;
+      font-weight: 650;
+    }
+
+    .map-panel h3 {
+      margin-top: 12px;
+      font-size: 18px;
+      font-weight: 650;
+    }
+
+    .map-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .map-option {
+      display: grid;
+      gap: 6px;
+      align-content: start;
+      min-height: 76px;
+      padding: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.24);
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.07);
+      color: #ffffff;
+      cursor: pointer;
+      font: inherit;
+      text-align: left;
+    }
+
+    .map-option:hover,
+    .map-option.active {
+      border-color: #7dd3fc;
+      background: rgba(125, 211, 252, 0.18);
+    }
+
+    .map-option-preview {
+      width: 56px;
+      height: 42px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      background-size: cover;
+      background-position: center;
+    }
+
+    .map-option-preview.osm {
+      background:
+        linear-gradient(45deg, transparent 43%, #e8eef2 43%, #e8eef2 56%, transparent 56%),
+        linear-gradient(135deg, transparent 43%, #f2f4f5 43%, #f2f4f5 56%, transparent 56%),
+        linear-gradient(90deg, #92c47d 0 34%, #d9ead3 34% 68%, #9fc5e8 68%);
+    }
+
+    .map-option-preview.satellite {
+      background:
+        radial-gradient(circle at 30% 25%, #8f9f73 0 18%, transparent 19%),
+        radial-gradient(circle at 65% 55%, #5f7f57 0 22%, transparent 23%),
+        linear-gradient(135deg, #273d2b, #6f7847 48%, #2f5d72);
+    }
+
+    .map-option-label {
+      font-size: 12px;
+      font-weight: 650;
+      line-height: 1.15;
+    }
+
+    .map-status {
+      min-height: 16px;
+      margin: 8px 0 0;
+      color: #9fb2c4;
+      font-size: 11px;
+    }
+
+    .cesium-button.map-toolbar-button {
+      overflow: hidden;
+      position: relative;
+      background:
+        radial-gradient(circle at 24% 24%, #92a76a 0 15%, transparent 16%),
+        radial-gradient(circle at 68% 34%, #465f37 0 18%, transparent 19%),
+        radial-gradient(circle at 38% 72%, #b0a06c 0 16%, transparent 17%),
+        linear-gradient(135deg, #243b2d, #72844f 42%, #3d6d77 100%);
+      background-size: cover;
+    }
+
+    .cesium-button.map-toolbar-button::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, transparent 0 31%, rgba(255, 255, 255, 0.22) 32% 34%, transparent 35% 65%, rgba(255, 255, 255, 0.22) 66% 68%, transparent 69%),
+        linear-gradient(0deg, transparent 0 31%, rgba(255, 255, 255, 0.2) 32% 34%, transparent 35% 65%, rgba(255, 255, 255, 0.2) 66% 68%, transparent 69%);
+    }
+
+    .cesium-button.map-toolbar-button::after {
+      content: "";
+      position: absolute;
+      inset: 2px;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      border-radius: 3px;
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.22);
+    }
+
   </style>
 </head>
 <body>
   <div id="cesiumContainer"></div>
+  <section id="mapPanel" class="map-panel" aria-label="Map controls" hidden>
+    <h2>Imagery</h2>
+    <div class="map-options">
+      <button class="map-option active" type="button" data-imagery="osm">
+        <span class="map-option-preview osm"></span>
+        <span class="map-option-label">OpenStreetMap</span>
+      </button>
+      <button class="map-option" type="button" data-imagery="satellite">
+        <span class="map-option-preview satellite"></span>
+        <span class="map-option-label">Satellite</span>
+      </button>
+    </div>
+    <p id="mapStatus" class="map-status"></p>
+  </section>
 
   <script src="https://cesium.com/downloads/cesiumjs/releases/1.120/Build/Cesium/Cesium.js"></script>
   <script>
-    const latitude = 28.660906136832967;
-    const longitude = 77.12244684354997;
+    const modelLatitude = 28.660906136832967;
+    const modelLongitude = 77.12244684354997;
+    const defaultView = {
+      latitude: 28.660913842,
+      longitude: 77.122389560,
+      distance: 28.6,
+      pitch: -57.6,
+      heading: 314.9,
+    };
     const modelHeight = 0;
-    const arcGisProvider =
-      Cesium.ArcGisMapServerImageryProvider.fromUrl(
-        "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer"
-      );
+    const osmProvider = new Cesium.OpenStreetMapImageryProvider({
+      url: "https://tile.openstreetmap.org/",
+    });
 
     const viewer = new Cesium.Viewer("cesiumContainer", {
       animation: false,
@@ -45,27 +195,97 @@
       selectionIndicator: false,
       timeline: false,
       navigationHelpButton: true,
-      baseLayer: Cesium.ImageryLayer.fromProviderAsync(arcGisProvider),
+      baseLayer: Cesium.ImageryLayer.fromProviderAsync(Promise.resolve(osmProvider)),
       terrainProvider: new Cesium.EllipsoidTerrainProvider(),
+      requestRenderMode: true,
+      maximumRenderTimeChange: Infinity,
     });
-
-    const modelPosition = Cesium.Cartesian3.fromDegrees(longitude, latitude, modelHeight);
 
     const modelEntity = viewer.entities.add({
       name: "House (GLB)",
-      position: modelPosition,
+      position: Cesium.Cartesian3.fromDegrees(modelLongitude, modelLatitude, modelHeight),
       model: {
-        uri: "./new_house2nd_floor.optimized.glb",
+        uri: "./new_house2nd_floor_updated_unlit.optimized.glb",
         scale: 1.0,
         heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+        asynchronous: true,
+        incrementallyLoadTextures: true,
       },
     });
 
-    viewer.zoomTo(modelEntity).catch(() => {
-      viewer.camera.flyTo({
-        destination: Cesium.Cartesian3.fromDegrees(longitude, latitude, 250),
+    const mapPanel = document.getElementById("mapPanel");
+    const mapStatus = document.getElementById("mapStatus");
+    const imageryButtons = document.querySelectorAll("[data-imagery]");
+
+    function setActiveButton(buttons, activeButton) {
+      buttons.forEach((button) => {
+        button.classList.toggle("active", button === activeButton);
+      });
+    }
+
+    function makeSatelliteProvider() {
+      return Cesium.ArcGisMapServerImageryProvider.fromUrl(
+        "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer"
+      );
+    }
+
+    function makeOsmProvider() {
+      return new Cesium.OpenStreetMapImageryProvider({
+        url: "https://tile.openstreetmap.org/",
+      });
+    }
+
+    function setImagery(type) {
+      const provider = type === "osm" ? Promise.resolve(makeOsmProvider()) : makeSatelliteProvider();
+      const layers = viewer.imageryLayers;
+      layers.removeAll();
+      layers.add(Cesium.ImageryLayer.fromProviderAsync(provider));
+      mapStatus.textContent = type === "osm" ? "OpenStreetMap imagery active." : "Satellite imagery active.";
+    }
+
+    function addMapToolbarButton() {
+      const toolbar = document.querySelector(".cesium-viewer-toolbar");
+      if (!toolbar) return;
+
+      const mapButton = document.createElement("button");
+      mapButton.type = "button";
+      mapButton.className = "cesium-button cesium-toolbar-button map-toolbar-button";
+      mapButton.title = "Map layers";
+      mapButton.setAttribute("aria-label", "Map layers");
+      mapButton.addEventListener("click", () => {
+        mapPanel.hidden = !mapPanel.hidden;
+      });
+
+      const homeButton = toolbar.querySelector(".cesium-home-button");
+      toolbar.insertBefore(mapButton, homeButton || toolbar.firstChild);
+    }
+
+    function applyView() {
+      const position = Cesium.Cartesian3.fromDegrees(
+        defaultView.longitude,
+        defaultView.latitude,
+        modelHeight
+      );
+      viewer.camera.lookAt(
+        position,
+        new Cesium.HeadingPitchRange(
+          Cesium.Math.toRadians(defaultView.heading),
+          Cesium.Math.toRadians(defaultView.pitch),
+          defaultView.distance
+        )
+      );
+      viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
+    }
+
+    imageryButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        setActiveButton(imageryButtons, button);
+        setImagery(button.dataset.imagery);
       });
     });
+
+    addMapToolbarButton();
+    applyView();
   </script>
 </body>
 </html>
