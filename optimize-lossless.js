@@ -1,15 +1,18 @@
 const { NodeIO } = require('@gltf-transform/core');
+const { KHRMaterialsUnlit } = require('@gltf-transform/extensions');
 const { dedup, prune } = require('@gltf-transform/functions');
 const fs = require('fs');
 
 async function main() {
-  const inputPath = 'new_house2nd_floor.glb';
-  const outputPath = 'new_house2nd_floor.optimized.glb';
+  const inputPath = process.argv[2] || 'new_house2nd_floor_updated_unlit.glb';
+  const outputPath = process.argv[3] || 'new_house2nd_floor_updated_unlit.optimized.glb';
 
-  const io = new NodeIO();
+  const io = new NodeIO().registerExtensions([KHRMaterialsUnlit]);
   const document = await io.read(inputPath);
 
   // Lossless-only transforms: remove unused data and merge exact duplicates.
+  // This preserves geometry shape and original image bytes; no simplification,
+  // resizing, or texture recompression is applied.
   await document.transform(
     dedup(),
     prune()
