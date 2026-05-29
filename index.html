@@ -8,6 +8,13 @@
     href="https://cesium.com/downloads/cesiumjs/releases/1.120/Build/Cesium/Widgets/widgets.css"
     rel="stylesheet"
   />
+  <link
+    rel="preload"
+    href="./new_house2nd_floor_updated_unlit.web.glb"
+    as="fetch"
+    type="model/gltf-binary"
+    crossorigin
+  />
   <style>
     html,
     body,
@@ -40,20 +47,13 @@
       display: none;
     }
 
-    .map-panel h2,
-    .map-panel h3 {
+    .map-panel h2 {
       margin: 0;
       line-height: 1.15;
     }
 
     .map-panel h2 {
       font-size: 20px;
-      font-weight: 650;
-    }
-
-    .map-panel h3 {
-      margin-top: 12px;
-      font-size: 18px;
       font-weight: 650;
     }
 
@@ -154,7 +154,7 @@
 </head>
 <body>
   <div id="cesiumContainer"></div>
-  <section id="mapPanel" class="map-panel" aria-label="Map controls" hidden>
+  <section id="mapPanel" class="map-panel" aria-label="Map controls">
     <h2>Imagery</h2>
     <div class="map-options">
       <button class="map-option" type="button" data-imagery="osm">
@@ -174,9 +174,9 @@
     const modelLatitude = 28.660866434;
     const modelLongitude = 77.122445113;
     const defaultView = {
-      latitude: 28.660913842,
-      longitude: 77.122389560,
-      distance: 28.6,
+      latitude: 28.660894668345403,
+      longitude: 77.12236789758163,
+      direction: 41.6,
       pitch: -57.6,
       heading: 314.9,
     };
@@ -205,7 +205,7 @@
       name: "House (GLB)",
       position: Cesium.Cartesian3.fromDegrees(modelLongitude, modelLatitude, modelHeight),
       model: {
-        uri: "./new_house2nd_floor_updated_unlit.optimized.glb",
+        uri: "./new_house2nd_floor_updated_unlit.web.glb",
         scale: 1.0,
         heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
         asynchronous: true,
@@ -272,7 +272,7 @@
         new Cesium.HeadingPitchRange(
           Cesium.Math.toRadians(defaultView.heading),
           Cesium.Math.toRadians(defaultView.pitch),
-          defaultView.distance
+          defaultView.direction
         )
       );
       viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
