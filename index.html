@@ -157,11 +157,11 @@
   <section id="mapPanel" class="map-panel" aria-label="Map controls" hidden>
     <h2>Imagery</h2>
     <div class="map-options">
-      <button class="map-option active" type="button" data-imagery="osm">
+      <button class="map-option" type="button" data-imagery="osm">
         <span class="map-option-preview osm"></span>
         <span class="map-option-label">OpenStreetMap</span>
       </button>
-      <button class="map-option" type="button" data-imagery="satellite">
+      <button class="map-option active" type="button" data-imagery="satellite">
         <span class="map-option-preview satellite"></span>
         <span class="map-option-label">Satellite</span>
       </button>
@@ -171,8 +171,8 @@
 
   <script src="https://cesium.com/downloads/cesiumjs/releases/1.120/Build/Cesium/Cesium.js"></script>
   <script>
-    const modelLatitude = 28.660906136832967;
-    const modelLongitude = 77.12244684354997;
+    const modelLatitude = 28.660866434;
+    const modelLongitude = 77.122445113;
     const defaultView = {
       latitude: 28.660913842,
       longitude: 77.122389560,
@@ -181,9 +181,9 @@
       heading: 314.9,
     };
     const modelHeight = 0;
-    const osmProvider = new Cesium.OpenStreetMapImageryProvider({
-      url: "https://tile.openstreetmap.org/",
-    });
+    const satelliteProvider = Cesium.ArcGisMapServerImageryProvider.fromUrl(
+      "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer"
+    );
 
     const viewer = new Cesium.Viewer("cesiumContainer", {
       animation: false,
@@ -195,7 +195,7 @@
       selectionIndicator: false,
       timeline: false,
       navigationHelpButton: true,
-      baseLayer: Cesium.ImageryLayer.fromProviderAsync(Promise.resolve(osmProvider)),
+      baseLayer: Cesium.ImageryLayer.fromProviderAsync(satelliteProvider),
       terrainProvider: new Cesium.EllipsoidTerrainProvider(),
       requestRenderMode: true,
       maximumRenderTimeChange: Infinity,
@@ -241,6 +241,7 @@
       layers.removeAll();
       layers.add(Cesium.ImageryLayer.fromProviderAsync(provider));
       mapStatus.textContent = type === "osm" ? "OpenStreetMap imagery active." : "Satellite imagery active.";
+      viewer.scene.requestRender();
     }
 
     function addMapToolbarButton() {
@@ -275,6 +276,7 @@
         )
       );
       viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
+      viewer.scene.requestRender();
     }
 
     imageryButtons.forEach((button) => {
